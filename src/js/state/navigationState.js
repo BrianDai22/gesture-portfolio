@@ -4,11 +4,12 @@
  */
 
 // Configuration
-const TOTAL_SECTIONS = 7; // 0-6: Intro, Experience, Projects, Skills, Education, Contact, Download
+const TOTAL_SECTIONS = 8; // 0-7: Help, Download, Contact, About, Experience, Projects, Skills, Education
+let homeSectionIndex = 3; // About is home (index 3)
 
 // State
-let currentSectionIndex = 0;
-let sectionChangeCallback = null;
+let currentSectionIndex = 3; // Start at home (About)
+const sectionChangeCallbacks = [];
 
 /**
  * Get current section index
@@ -19,31 +20,37 @@ const getCurrentSection = () => {
 };
 
 /**
- * Navigate to next section
+ * Navigate to next section (circular - wraps from last to first)
  */
 const navigateNext = () => {
-  const newIndex = Math.min(currentSectionIndex + 1, TOTAL_SECTIONS - 1);
-  if (newIndex !== currentSectionIndex) {
-    goTo(newIndex);
-  }
+  const newIndex = (currentSectionIndex + 1) % TOTAL_SECTIONS;
+  goTo(newIndex);
 };
 
 /**
- * Navigate to previous section
+ * Navigate to previous section (circular - wraps from first to last)
  */
 const navigatePrev = () => {
-  const newIndex = Math.max(currentSectionIndex - 1, 0);
-  if (newIndex !== currentSectionIndex) {
-    goTo(newIndex);
+  const newIndex = (currentSectionIndex - 1 + TOTAL_SECTIONS) % TOTAL_SECTIONS;
+  goTo(newIndex);
+};
+
+/**
+ * Navigate to home section (About)
+ */
+const navigateHome = () => {
+  if (currentSectionIndex !== homeSectionIndex) {
+    goTo(homeSectionIndex);
   }
 };
 
 /**
- * Navigate to home (section 0)
+ * Set home section index
+ * @param {number} index - Home section index
  */
-const navigateHome = () => {
-  if (currentSectionIndex !== 0) {
-    goTo(0);
+const setHomeSectionIndex = (index) => {
+  if (index >= 0 && index < TOTAL_SECTIONS) {
+    homeSectionIndex = index;
   }
 };
 
@@ -62,10 +69,10 @@ const goTo = (index) => {
 
   console.log(`NavigationState: Navigating from section ${previousIndex} to section ${currentSectionIndex}`);
 
-  // Emit change event
-  if (sectionChangeCallback) {
-    sectionChangeCallback(currentSectionIndex, previousIndex);
-  }
+  // Emit change event to all listeners
+  sectionChangeCallbacks.forEach(callback => {
+    callback(currentSectionIndex, previousIndex);
+  });
 };
 
 /**
@@ -73,7 +80,9 @@ const goTo = (index) => {
  * @param {Function} callback - Function called with (newIndex, oldIndex)
  */
 const onSectionChange = (callback) => {
-  sectionChangeCallback = callback;
+  if (typeof callback === 'function') {
+    sectionChangeCallbacks.push(callback);
+  }
 };
 
 export {
@@ -82,5 +91,6 @@ export {
   navigatePrev,
   navigateHome,
   goTo,
-  onSectionChange
+  onSectionChange,
+  setHomeSectionIndex
 };

@@ -7,7 +7,7 @@ Build a camera-based, gesture-controlled portfolio website in 4 phases: set up t
 ## Phases
 
 - [x] **Phase 1: Foundation** - Project setup, dev server, HTML/CSS scaffold, CDN imports
-- [ ] **Phase 2: Core Interaction** - Camera access, MediaPipe hand tracking, Three.js 3D scene, gesture navigation
+- [x] **Phase 2: Core Interaction** - Camera access, MediaPipe hand tracking, Three.js 3D scene, gesture navigation
 - [ ] **Phase 3: Content & UI** - Portfolio sections, resume download, gesture tutorial, styling
 - [ ] **Phase 4: Polish & Deploy** - Final testing, polish, AWS S3 + CloudFront deployment
 
@@ -31,7 +31,7 @@ Plans:
 Plans:
 - [x] 02-01: Camera access, video feed display, MediaPipe Hands initialization
 - [x] 02-02: Gesture detection logic (swipe, point, open palm)
-- [ ] 02-03: Three.js scene setup, section navigation via gestures
+- [x] 02-03: Three.js scene setup, section navigation via gestures
 
 ### Phase 3: Content & UI
 **Goal**: All portfolio content displayed with polished, minimalist UI
@@ -57,6 +57,6 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2025-11-28 |
-| 2. Core Interaction | 2/3 | In progress | - |
+| 2. Core Interaction | 3/3 | Complete | 2025-11-28 |
 | 3. Content & UI | 0/3 | Not started | - |
 | 4. Polish & Deploy | 0/2 | Not started | - |

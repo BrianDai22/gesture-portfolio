@@ -117,17 +117,19 @@ const updateFingerStates = (landmarks) => {
         Math.pow(mcp.y - wrist.y, 2)
       );
       const extensionRatio = tipToWrist / (mcpToWrist + 0.001);
-      const ratioExtended = extensionRatio > 1.3;
+      const ratioExtended = extensionRatio > 1.5; // Increased threshold
 
       // Method 2: Y-position (works when palm faces camera)
-      // Extended finger: tip is above PIP, PIP is above MCP (lower Y = higher on screen)
-      const yExtended = tip.y < pip.y && pip.y < mcp.y;
+      // Extended finger: tip is clearly above PIP (lower Y = higher on screen)
+      const yExtended = (pip.y - tip.y) > 0.04; // Tip significantly above PIP
 
       // Method 3: Tip above MCP with significant margin
-      const tipAboveMcp = (mcp.y - tip.y) > 0.05;
+      const tipAboveMcp = (mcp.y - tip.y) > 0.08; // Increased threshold
 
-      // Finger is extended if ANY method detects it
-      isExtended = ratioExtended || yExtended || tipAboveMcp;
+      // Finger is extended if MULTIPLE methods agree (more robust)
+      // For pointing: require at least 2 methods to agree
+      const extendedMethodCount = [ratioExtended, yExtended, tipAboveMcp].filter(Boolean).length;
+      isExtended = extendedMethodCount >= 2;
     }
 
     fingerStates[finger.name] = isExtended ? 'extended' : 'curled';

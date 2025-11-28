@@ -6,7 +6,7 @@
 // DOM references
 let swipeIndicator = null;
 let pointIndicator = null;
-let palmIndicator = null;
+let fistIndicator = null;
 let container = null;
 
 /**
@@ -36,21 +36,21 @@ const initGestureIndicator = () => {
   pointIndicator.appendChild(pointDot);
   container.appendChild(pointIndicator);
 
-  // Create palm indicator
-  palmIndicator = document.createElement('div');
-  palmIndicator.className = 'gesture-indicator gesture-palm';
-  const palmIcon = document.createElement('span');
-  palmIcon.className = 'palm-icon';
-  palmIcon.textContent = '🏠';
-  palmIndicator.appendChild(palmIcon);
-  container.appendChild(palmIndicator);
+  // Create fist indicator (for home gesture)
+  fistIndicator = document.createElement('div');
+  fistIndicator.className = 'gesture-indicator gesture-fist';
+  const fistIcon = document.createElement('span');
+  fistIcon.className = 'fist-icon';
+  fistIcon.textContent = '✊🏠';
+  fistIndicator.appendChild(fistIcon);
+  container.appendChild(fistIndicator);
 
   console.log('GestureIndicator: Initialized');
 };
 
 /**
  * Show gesture indicator
- * @param {string} gestureType - Type of gesture ('swipe-left', 'swipe-right', 'point', 'palm-home')
+ * @param {string} gestureType - Type of gesture ('swipe-left', 'swipe-right', 'point', 'fist-home')
  * @param {Object} position - Optional position for point gesture {x, y}
  */
 const showGestureIndicator = (gestureType, position = null) => {
@@ -69,8 +69,8 @@ const showGestureIndicator = (gestureType, position = null) => {
     case 'point':
       showPoint(position);
       break;
-    case 'palm-home':
-      showPalmHome();
+    case 'fist-home':
+      showFistHome();
       break;
     default:
       console.warn(`GestureIndicator: Unknown gesture type ${gestureType}`);
@@ -128,19 +128,19 @@ const hidePointIndicator = () => {
 };
 
 /**
- * Show palm-home indicator
+ * Show fist-home indicator
  */
-const showPalmHome = () => {
+const showFistHome = () => {
   // Position at center
-  palmIndicator.style.left = '50%';
-  palmIndicator.style.top = '50%';
+  fistIndicator.style.left = '50%';
+  fistIndicator.style.top = '50%';
 
   // Show and animate
-  palmIndicator.classList.add('active');
+  fistIndicator.classList.add('active');
 
   // Hide after animation
   setTimeout(() => {
-    palmIndicator.classList.remove('active');
+    fistIndicator.classList.remove('active');
   }, 800);
 };
 
@@ -154,7 +154,7 @@ const destroyGestureIndicator = () => {
   container = null;
   swipeIndicator = null;
   pointIndicator = null;
-  palmIndicator = null;
+  fistIndicator = null;
 };
 
 export {

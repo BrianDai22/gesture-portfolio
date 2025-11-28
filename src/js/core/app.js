@@ -7,9 +7,14 @@ import { initCamera, getCameraStream, stopCamera } from './camera.js';
 import { initHandTracking, setOnResultsCallback, stopHandTracking } from './handTracking.js';
 import { initHandOverlay, renderLandmarks, destroyHandOverlay } from '../ui/handOverlay.js';
 import { getDominantHand, setDominantHand, getLandmarks } from '../state/handState.js';
-import { initGestureRecognizer, processFrame, onGesture } from '../gestures/gestureRecognizer.js';
+import { initGestureRecognizer, processFrame, onGesture, onCooldown } from '../gestures/gestureRecognizer.js';
+import { initSwipeCooldown, startCooldown, destroySwipeCooldown } from '../ui/swipeCooldown.js';
 import { getCurrentSection, navigateNext, navigatePrev, navigateHome, onSectionChange } from '../state/navigationState.js';
 import { initGestureIndicator, showGestureIndicator, hidePointIndicator, destroyGestureIndicator } from '../ui/gestureIndicator.js';
+import { initScene, getScene, getCamera, startRenderLoop, stopRenderLoop, onUpdate } from '../scene/sceneManager.js';
+import { createSectionPanels, HOME_SECTION_INDEX } from '../scene/sectionPanels.js';
+import { initNavigation, updateCameraAnimation, updatePointer } from './navigation.js';
+import { initNavigationIndicator, updateNavigationIndicator, destroyNavigationIndicator } from '../ui/navigationIndicator.js';
 
 // Get DOM references
 const getDomRefs = () => {
@@ -40,7 +45,31 @@ const createApp = () => {
     console.log('Gesture Portfolio: Initializing...');
 
     try {
-      // Step 1: Initialize camera
+      // Step 1: Initialize Three.js scene
+      const sceneComponents = initScene();
+      if (sceneComponents) {
+        const { scene, camera } = sceneComponents;
+
+        // Create section panels
+        const panels = createSectionPanels(scene);
+
+        // Initialize navigation system
+        initNavigation(camera, panels);
+
+        // Initialize navigation indicator and set initial state
+        initNavigationIndicator();
+        updateNavigationIndicator(HOME_SECTION_INDEX);
+
+        // Register camera animation update
+        onUpdate(updateCameraAnimation);
+
+        // Start render loop
+        startRenderLoop();
+
+        console.log('Gesture Portfolio: Three.js scene initialized');
+      }
+
+      // Step 2: Initialize camera
       const cameraStream = await initCamera();
 
       if (cameraStream) {
@@ -65,6 +94,12 @@ const createApp = () => {
         // Initialize gesture recognition system
         initGestureRecognizer();
         initGestureIndicator();
+        initSwipeCooldown();
+
+        // Register cooldown timer callback
+        onCooldown((durationMs) => {
+          startCooldown(durationMs);
+        });
 
         // Set up callback to render landmarks and process gestures
         setOnResultsCallback((results) => {
@@ -92,6 +127,7 @@ const createApp = () => {
         // Set up navigation change handler
         onSectionChange((newIndex, oldIndex) => {
           console.log(`Navigation: Section changed from ${oldIndex} to ${newIndex}`);
+          updateNavigationIndicator(newIndex);
         });
 
         // Show hand selector and initialize it
@@ -126,25 +162,25 @@ const createApp = () => {
     // Map gestures to navigation actions
     switch (gesture.type) {
       case 'swipe-left':
-        console.log('Action: Navigate to next section');
-        navigateNext();
-        break;
-
-      case 'swipe-right':
         console.log('Action: Navigate to previous section');
         navigatePrev();
         break;
 
-      case 'palm-home':
-        console.log('Action: Navigate to home');
+      case 'swipe-right':
+        console.log('Action: Navigate to next section');
+        navigateNext();
+        break;
+
+      case 'fist-home':
+        console.log('Action: Navigate to home (fist gesture)');
         navigateHome();
         break;
 
       case 'point':
-        // Point gesture is continuous - just track position for now
-        // Will be used for selecting items in Phase 2 Plan 3
+        // Point gesture is continuous - track position and check for panel hover
         if (gesture.data) {
-          console.log(`Point position: x=${gesture.data.x.toFixed(3)}, y=${gesture.data.y.toFixed(3)}`);
+          // Update pointer for raycasting against panels
+          updatePointer(gesture.data);
         }
         break;
 
@@ -210,9 +246,12 @@ const createApp = () => {
    */
   const destroy = () => {
     console.log('Gesture Portfolio: Cleaning up...');
+    stopRenderLoop();
     stopHandTracking();
     destroyHandOverlay();
     destroyGestureIndicator();
+    destroySwipeCooldown();
+    destroyNavigationIndicator();
     stopCamera();
     initialized = false;
   };
