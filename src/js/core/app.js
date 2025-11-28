@@ -6,7 +6,10 @@
 import { initCamera, getCameraStream, stopCamera } from './camera.js';
 import { initHandTracking, setOnResultsCallback, stopHandTracking } from './handTracking.js';
 import { initHandOverlay, renderLandmarks, destroyHandOverlay } from '../ui/handOverlay.js';
-import { getDominantHand, setDominantHand } from '../state/handState.js';
+import { getDominantHand, setDominantHand, getLandmarks } from '../state/handState.js';
+import { initGestureRecognizer, processFrame, onGesture } from '../gestures/gestureRecognizer.js';
+import { getCurrentSection, navigateNext, navigatePrev, navigateHome, onSectionChange } from '../state/navigationState.js';
+import { initGestureIndicator, showGestureIndicator, hidePointIndicator, destroyGestureIndicator } from '../ui/gestureIndicator.js';
 
 // Get DOM references
 const getDomRefs = () => {
@@ -20,6 +23,7 @@ const getDomRefs = () => {
 const createApp = () => {
   const dom = getDomRefs();
   let initialized = false;
+  let lastGestureType = null;
 
   const init = async () => {
     if (!dom.threeCanvas || !dom.videoElement || !dom.handCanvas || !dom.overlay) {
@@ -58,15 +62,43 @@ const createApp = () => {
         // Initialize hand overlay
         initHandOverlay(dom.handCanvas, dom.videoElement);
 
-        // Set up callback to render landmarks
+        // Initialize gesture recognition system
+        initGestureRecognizer();
+        initGestureIndicator();
+
+        // Set up callback to render landmarks and process gestures
         setOnResultsCallback((results) => {
           renderLandmarks(results);
+
+          // Process gestures from landmarks
+          const landmarks = getLandmarks();
+          if (landmarks) {
+            const gesture = processFrame(landmarks);
+
+            // Hide point indicator if we're not pointing anymore
+            if (lastGestureType === 'point' && (!gesture || gesture.type !== 'point')) {
+              hidePointIndicator();
+            }
+
+            lastGestureType = gesture ? gesture.type : null;
+          }
+        });
+
+        // Set up gesture event handler
+        onGesture((gesture) => {
+          handleGesture(gesture);
+        });
+
+        // Set up navigation change handler
+        onSectionChange((newIndex, oldIndex) => {
+          console.log(`Navigation: Section changed from ${oldIndex} to ${newIndex}`);
         });
 
         // Show hand selector and initialize it
         initHandSelector();
 
         console.log('Gesture Portfolio: Hand tracking active');
+        console.log('Gesture Portfolio: Gesture recognition active');
 
       } else {
         // Camera denied - fallback mode already handled by camera module
@@ -78,6 +110,46 @@ const createApp = () => {
     } catch (error) {
       console.error('Gesture Portfolio: Initialization error', error);
       updateStatus('Initialization Error', 'Please refresh the page and try again');
+    }
+  };
+
+  /**
+   * Handle detected gestures
+   * @param {Object} gesture - Gesture object from recognizer
+   */
+  const handleGesture = (gesture) => {
+    console.log('Gesture detected:', gesture);
+
+    // Show visual indicator
+    showGestureIndicator(gesture.type, gesture.data);
+
+    // Map gestures to navigation actions
+    switch (gesture.type) {
+      case 'swipe-left':
+        console.log('Action: Navigate to next section');
+        navigateNext();
+        break;
+
+      case 'swipe-right':
+        console.log('Action: Navigate to previous section');
+        navigatePrev();
+        break;
+
+      case 'palm-home':
+        console.log('Action: Navigate to home');
+        navigateHome();
+        break;
+
+      case 'point':
+        // Point gesture is continuous - just track position for now
+        // Will be used for selecting items in Phase 2 Plan 3
+        if (gesture.data) {
+          console.log(`Point position: x=${gesture.data.x.toFixed(3)}, y=${gesture.data.y.toFixed(3)}`);
+        }
+        break;
+
+      default:
+        console.warn(`Unknown gesture type: ${gesture.type}`);
     }
   };
 
@@ -140,6 +212,7 @@ const createApp = () => {
     console.log('Gesture Portfolio: Cleaning up...');
     stopHandTracking();
     destroyHandOverlay();
+    destroyGestureIndicator();
     stopCamera();
     initialized = false;
   };

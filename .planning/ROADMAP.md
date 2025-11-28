@@ -30,7 +30,7 @@ Plans:
 
 Plans:
 - [x] 02-01: Camera access, video feed display, MediaPipe Hands initialization
-- [ ] 02-02: Gesture detection logic (swipe, point, open palm)
+- [x] 02-02: Gesture detection logic (swipe, point, open palm)
 - [ ] 02-03: Three.js scene setup, section navigation via gestures
 
 ### Phase 3: Content & UI
@@ -57,6 +57,6 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2025-11-28 |
-| 2. Core Interaction | 1/3 | In progress | - |
+| 2. Core Interaction | 2/3 | In progress | - |
 | 3. Content & UI | 0/3 | Not started | - |
 | 4. Polish & Deploy | 0/2 | Not started | - |
