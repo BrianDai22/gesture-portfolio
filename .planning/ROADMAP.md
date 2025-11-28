@@ -16,11 +16,12 @@ Build a camera-based, gesture-controlled portfolio website in 4 phases: set up t
 ### Phase 1: Foundation
 **Goal**: Working project skeleton with dev server and all dependencies loaded
 **Depends on**: Nothing (first phase)
-**Plans**: 2 plans
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: Project structure, package.json, dev server setup
-- [ ] 01-02: HTML scaffold, CSS base styles, CDN imports (Three.js, MediaPipe)
+- [ ] 01-01: GitHub repo creation, project structure, initial commit (verify git workflow)
+- [ ] 01-02: Dev server setup (package.json, live-server, npm scripts)
+- [ ] 01-03: HTML scaffold, CSS base styles, CDN imports (Three.js, MediaPipe), JS entry point
 
 ### Phase 2: Core Interaction
 **Goal**: Hand gestures detected and mapped to 3D scene navigation
@@ -55,7 +56,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/2 | Not started | - |
+| 1. Foundation | 0/3 | Not started | - |
 | 2. Core Interaction | 0/3 | Not started | - |
 | 3. Content & UI | 0/3 | Not started | - |
 | 4. Polish & Deploy | 0/2 | Not started | - |
