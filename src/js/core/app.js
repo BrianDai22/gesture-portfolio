@@ -6,6 +6,7 @@
 import { initCamera, getCameraStream, stopCamera } from './camera.js';
 import { initHandTracking, setOnResultsCallback, stopHandTracking } from './handTracking.js';
 import { initHandOverlay, renderLandmarks, destroyHandOverlay } from '../ui/handOverlay.js';
+import { getDominantHand, setDominantHand } from '../state/handState.js';
 
 // Get DOM references
 const getDomRefs = () => {
@@ -62,6 +63,9 @@ const createApp = () => {
           renderLandmarks(results);
         });
 
+        // Show hand selector and initialize it
+        initHandSelector();
+
         console.log('Gesture Portfolio: Hand tracking active');
 
       } else {
@@ -90,6 +94,43 @@ const createApp = () => {
       if (statusText) statusText.textContent = status;
       if (hintText) hintText.textContent = hint;
     }
+  };
+
+  /**
+   * Initialize hand selector UI
+   */
+  const initHandSelector = () => {
+    const selector = document.getElementById('hand-selector');
+    if (!selector) return;
+
+    // Show the selector
+    selector.classList.remove('hidden');
+
+    // Get current preference and update button states
+    const currentHand = getDominantHand();
+    updateHandButtons(currentHand);
+
+    // Add click handlers to buttons
+    const buttons = selector.querySelectorAll('.hand-btn');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const hand = btn.dataset.hand;
+        setDominantHand(hand);
+        updateHandButtons(hand);
+      });
+    });
+  };
+
+  /**
+   * Update hand button visual states
+   * @param {string} activeHand - 'Left' or 'Right'
+   */
+  const updateHandButtons = (activeHand) => {
+    const buttons = document.querySelectorAll('.hand-btn');
+    buttons.forEach(btn => {
+      const isActive = btn.dataset.hand === activeHand;
+      btn.setAttribute('aria-pressed', isActive.toString());
+    });
   };
 
   /**

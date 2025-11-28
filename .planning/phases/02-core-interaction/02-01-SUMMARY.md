@@ -7,6 +7,7 @@
 - MediaPipe Hands initialization with dominant hand preference (persisted to localStorage)
 - Hand skeleton overlay with cyan connection lines and white landmark dots with glow effects
 - Video properly oriented (right hand on right side) with matching hand overlay
+- Hand preference selector UI (Left/Right toggle buttons)
 - Full app orchestration with cleanup on page unload
 
 ## Files Created

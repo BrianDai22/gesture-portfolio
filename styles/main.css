@@ -143,6 +143,46 @@ main {
   margin-top: var(--spacing-xs);
 }
 
+/* Hand Selector */
+.hand-selector {
+  top: var(--spacing-lg);
+  bottom: auto;
+}
+
+.selector-label {
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+}
+
+.hand-buttons {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: center;
+}
+
+.hand-btn {
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  color: var(--color-text);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hand-btn:hover {
+  border-color: var(--color-accent);
+}
+
+.hand-btn[aria-pressed="true"] {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-bg);
+  font-weight: 600;
+}
+
 .noscript-banner {
   background: var(--color-surface);
   color: var(--color-text);
