@@ -19,7 +19,7 @@ Build a camera-based, gesture-controlled portfolio website in 4 phases: set up t
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: GitHub repo creation, project structure, initial commit (verify git workflow)
+- [x] 01-01: GitHub repo creation, project structure, initial commit (verify git workflow)
 - [ ] 01-02: Dev server setup (package.json, live-server, npm scripts)
 - [ ] 01-03: HTML scaffold, CSS base styles, CDN imports (Three.js, MediaPipe), JS entry point
 
@@ -56,7 +56,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/3 | Not started | - |
+| 1. Foundation | 1/3 | In progress | - |
 | 2. Core Interaction | 0/3 | Not started | - |
 | 3. Content & UI | 0/3 | Not started | - |
 | 4. Polish & Deploy | 0/2 | Not started | - |
