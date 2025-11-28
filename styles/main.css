@@ -69,15 +69,40 @@ main {
   display: block;
 }
 
-/* Camera Feed (hidden) */
+/* Camera Feed - Full viewport AR-style background */
 #camera-feed {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
   pointer-events: none;
+  transform: scaleX(-1); /* Flip to show right hand on right side */
+}
+
+#camera-feed.hidden {
+  display: none;
+}
+
+/* Camera state styling */
+.camera-active #camera-feed {
+  display: block;
+}
+
+.camera-denied #overlay-status {
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+}
+
+/* Hand Overlay Canvas */
+#hand-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  transform: scaleX(-1); /* Match video flip */
 }
 
 /* UI Overlay */
