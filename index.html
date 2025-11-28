@@ -5,16 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Brian Dai's interactive gesture-controlled portfolio built with Three.js and MediaPipe">
   <meta name="author" content="Brian Dai">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' 'sha256-7HAzeTQbdi4IbDPYbn9oaMmg288/HD1abs7r9XD3R8s='; style-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://cdn.jsdelivr.net; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+  <!-- Frame embedding and Permissions-Policy are enforced via HTTP response headers (see security-headers.conf) because browsers ignore those directives in meta tags. -->
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>Brian Dai | Gesture Portfolio</title>
 
   <!-- CSS -->
   <link rel="stylesheet" href="styles/main.css">
-
-  <!-- MediaPipe CDN Imports -->
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 
   <!-- Three.js Import Map -->
   <script type="importmap">
@@ -25,15 +23,34 @@
       }
     }
   </script>
+</head>
+<body>
+  <noscript>
+    <div class="noscript-banner" role="alert">
+      This experience requires JavaScript, WebGL, and camera access for gesture navigation. Please enable JavaScript or use the resume download instead.
+    </div>
+  </noscript>
+
+  <main role="main" aria-label="Gesture-controlled portfolio">
+    <canvas id="three-canvas" aria-hidden="true"></canvas>
+    <video id="camera-feed" class="hidden" playsinline aria-hidden="true"></video>
+    <div id="ui-overlay" aria-live="polite">
+      <h1 class="visually-hidden">Gesture-controlled portfolio</h1>
+      <p class="visually-hidden" id="sr-instructions">Use gestures or keyboard controls (to be enabled in Phase II) to navigate projects.</p>
+      <div id="overlay-status" class="overlay-panel" role="status">
+        <p class="status-text">Initializing…</p>
+        <p class="hint">Allow camera access to enable gesture navigation.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- MediaPipe CDN Imports (pinned, deferred) -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js" integrity="sha384-q1KhAZhJcJXr3zfC3Tz07pBqQSabwFIZhXlmlUAB8s0zk4ETWERkIKGBCFQ5Jc3e" crossorigin="anonymous" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils@0.6.1675466023/control_utils.js" integrity="sha384-thKklr83mMkmn5Oz6g4Hjh6DDhvg7+2drGC/ftFqIvpCagFo9sKRttSmILlAEhjO" crossorigin="anonymous" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1675466124/drawing_utils.js" integrity="sha384-W/7NVG2tfN12ld8faSFVOZ/W4UHFHze98GqEUPTl8EjY9QDwCKQIzoCHp8/IlIIr" crossorigin="anonymous" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" integrity="sha384-oHwoZ9HyKv5ark5VOH+XWdbNfmhYtptAOBuV8plz6mAfXvTA6d8fULuYllWouEK2" crossorigin="anonymous" defer></script>
 
   <!-- Main JavaScript Module -->
   <script type="module" src="src/js/main.js"></script>
-</head>
-<body>
-  <main>
-    <canvas id="three-canvas"></canvas>
-    <video id="camera-feed" class="hidden" playsinline></video>
-    <div id="ui-overlay"></div>
-  </main>
 </body>
 </html>

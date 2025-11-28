@@ -1,16 +1,12 @@
-// Three.js and MediaPipe imports will be added in Phase 2
-// import * as THREE from 'three';
-// import { Hands } from '@mediapipe/hands';
+import { createApp } from './core/app.js';
 
 /**
- * Initialize the Gesture Portfolio application
+ * Initialize the Gesture Portfolio application (Phase I placeholder).
+ * Phase II will add camera + Three.js + MediaPipe wiring here.
  */
 const init = () => {
-  console.log('Gesture Portfolio initialized');
-
-  // Phase 2: Camera setup
-  // Phase 2: Three.js scene setup
-  // Phase 2: MediaPipe hands setup
+  const app = createApp();
+  app.init();
 };
 
 // Initialize on DOM content loaded

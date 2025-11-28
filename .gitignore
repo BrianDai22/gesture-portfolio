@@ -26,3 +26,7 @@ build/
 
 # Cache
 .cache/
+
+# Tooling artifacts
+.code/
+Dai_Brian_Resume_*.pdf
