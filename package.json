@@ -1,0 +1,25 @@
+{
+  "name": "gesture-portfolio",
+  "version": "1.0.0",
+  "description": "A camera-based, gesture-controlled portfolio website",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "live-server --port=3000 --open",
+    "start": "live-server --port=3000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BrianDai22/gesture-portfolio.git"
+  },
+  "keywords": [],
+  "author": "Brian Dai",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/BrianDai22/gesture-portfolio/issues"
+  },
+  "homepage": "https://github.com/BrianDai22/gesture-portfolio#readme",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}
