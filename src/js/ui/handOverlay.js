@@ -6,6 +6,7 @@
 let canvas = null;
 let ctx = null;
 let videoElement = null;
+let resizeTimeoutId = null;
 
 /**
  * Initialize hand overlay canvas
@@ -25,8 +26,8 @@ const initHandOverlay = (canvasElement, video) => {
   // Set initial canvas size
   resizeCanvas();
 
-  // Resize canvas on window resize
-  window.addEventListener('resize', resizeCanvas);
+  // Resize canvas on window resize with debounce
+  window.addEventListener('resize', debouncedResize);
 
   console.log('HandOverlay: Initialized');
 };
@@ -37,9 +38,25 @@ const initHandOverlay = (canvasElement, video) => {
 const resizeCanvas = () => {
   if (!canvas || !videoElement) return;
 
-  // Match window dimensions for full-screen overlay
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  // Prefer video intrinsic dimensions if available, otherwise fall back to window size
+  const width = videoElement.videoWidth || window.innerWidth;
+  const height = videoElement.videoHeight || window.innerHeight;
+
+  canvas.width = width;
+  canvas.height = height;
+};
+
+/**
+ * Debounced resize handler to avoid excessive redraws
+ */
+const debouncedResize = () => {
+  if (resizeTimeoutId !== null) {
+    clearTimeout(resizeTimeoutId);
+  }
+  resizeTimeoutId = setTimeout(() => {
+    resizeCanvas();
+    resizeTimeoutId = null;
+  }, 150);
 };
 
 // Define HAND_CONNECTIONS manually (MediaPipe hand skeleton connections)
@@ -108,10 +125,20 @@ const renderLandmarks = (results) => {
  * Cleanup overlay
  */
 const destroyHandOverlay = () => {
+  // Clear any pending resize timeout
+  if (resizeTimeoutId !== null) {
+    clearTimeout(resizeTimeoutId);
+    resizeTimeoutId = null;
+  }
+
+  // Clear canvas
   if (canvas && ctx) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
-  window.removeEventListener('resize', resizeCanvas);
+
+  // Remove event listener
+  window.removeEventListener('resize', debouncedResize);
+
   canvas = null;
   ctx = null;
   videoElement = null;

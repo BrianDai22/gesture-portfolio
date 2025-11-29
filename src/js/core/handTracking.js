@@ -75,9 +75,15 @@ const initHandTracking = async (videoElement) => {
  * @param {Object} results - MediaPipe results object
  */
 const onResults = (results) => {
+  const invokeCallback = (payload) => {
+    if (onResultsCallback) {
+      onResultsCallback(payload);
+    }
+  };
+
   const dominantHand = getDominantHand();
 
-  if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+  if (results && results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
     // Get handedness info
     const handedness = results.multiHandedness[0];
     let detectedHand = handedness.label; // 'Left' or 'Right'
@@ -96,15 +102,14 @@ const onResults = (results) => {
       updateLandmarks(landmarks);
 
       // Call external callback if set
-      if (onResultsCallback) {
-        onResultsCallback(results);
-      }
-    } else {
-      clearLandmarks();
+      invokeCallback(results);
+      return;
     }
-  } else {
-    clearLandmarks();
   }
+
+  // No valid hand detected for rendering
+  clearLandmarks();
+  invokeCallback({ multiHandLandmarks: [] });
 };
 
 /**

@@ -41,6 +41,8 @@ const initScene = () => {
     alpha: true,
     antialias: true
   });
+  // Ensure the renderer stays transparent so the camera feed remains visible
+  renderer.setClearColor(0x000000, 0);
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Max 2 for performance
 
@@ -123,6 +125,89 @@ const stopRenderLoop = () => {
 };
 
 /**
+ * Dispose of Three.js resources (geometries, materials, textures)
+ * @param {THREE.Object3D} object - Object to dispose
+ */
+const disposeObject = (object) => {
+  if (!object) return;
+
+  // Dispose geometry
+  if (object.geometry) {
+    object.geometry.dispose();
+  }
+
+  // Dispose material(s)
+  if (object.material) {
+    if (Array.isArray(object.material)) {
+      object.material.forEach(material => disposeMaterial(material));
+    } else {
+      disposeMaterial(object.material);
+    }
+  }
+
+  // Recursively dispose children
+  if (object.children) {
+    object.children.forEach(child => disposeObject(child));
+  }
+};
+
+/**
+ * Dispose of a material and its textures
+ * @param {THREE.Material} material - Material to dispose
+ */
+const disposeMaterial = (material) => {
+  if (!material) return;
+
+  // Dispose all textures
+  const textureProperties = ['map', 'lightMap', 'bumpMap', 'normalMap', 'specularMap',
+                             'envMap', 'alphaMap', 'aoMap', 'displacementMap',
+                             'emissiveMap', 'gradientMap', 'metalnessMap', 'roughnessMap'];
+
+  textureProperties.forEach(prop => {
+    if (material[prop]) {
+      material[prop].dispose();
+    }
+  });
+
+  material.dispose();
+};
+
+/**
+ * Cleanup and destroy scene resources
+ */
+const destroyScene = () => {
+  console.log('SceneManager: Destroying scene...');
+
+  // Stop render loop first
+  stopRenderLoop();
+
+  // Clear all update callbacks
+  updateCallbacks.length = 0;
+
+  // Remove resize event listener
+  window.removeEventListener('resize', handleResize);
+
+  // Dispose scene objects
+  if (scene) {
+    disposeObject(scene);
+    scene.clear();
+    scene = null;
+  }
+
+  // Dispose renderer
+  if (renderer) {
+    renderer.dispose();
+    renderer.forceContextLoss();
+    renderer = null;
+  }
+
+  // Clear camera reference
+  camera = null;
+
+  console.log('SceneManager: Scene destroyed');
+};
+
+/**
  * Register a callback to be called each frame
  * @param {Function} callback - Function to call each frame
  */
@@ -157,5 +242,6 @@ export {
   getRenderer,
   onUpdate,
   startRenderLoop,
-  stopRenderLoop
+  stopRenderLoop,
+  destroyScene
 };

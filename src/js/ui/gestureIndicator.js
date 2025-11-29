@@ -9,6 +9,10 @@ let pointIndicator = null;
 let fistIndicator = null;
 let container = null;
 
+// Timeout tracking
+let swipeTimeoutId = null;
+let fistTimeoutId = null;
+
 /**
  * Initialize gesture indicator elements
  */
@@ -82,6 +86,12 @@ const showGestureIndicator = (gestureType, position = null) => {
  * @param {string} direction - 'left' or 'right'
  */
 const showSwipe = (direction) => {
+  // Clear existing timeout
+  if (swipeTimeoutId !== null) {
+    clearTimeout(swipeTimeoutId);
+    swipeTimeoutId = null;
+  }
+
   // Update arrow direction
   const arrow = swipeIndicator.querySelector('.arrow');
   arrow.textContent = direction === 'left' ? '←' : '→';
@@ -94,8 +104,9 @@ const showSwipe = (direction) => {
   swipeIndicator.classList.add('active');
 
   // Hide after animation
-  setTimeout(() => {
+  swipeTimeoutId = setTimeout(() => {
     swipeIndicator.classList.remove('active');
+    swipeTimeoutId = null;
   }, 300);
 };
 
@@ -131,6 +142,12 @@ const hidePointIndicator = () => {
  * Show fist-home indicator
  */
 const showFistHome = () => {
+  // Clear existing timeout
+  if (fistTimeoutId !== null) {
+    clearTimeout(fistTimeoutId);
+    fistTimeoutId = null;
+  }
+
   // Position at center
   fistIndicator.style.left = '50%';
   fistIndicator.style.top = '50%';
@@ -139,8 +156,9 @@ const showFistHome = () => {
   fistIndicator.classList.add('active');
 
   // Hide after animation
-  setTimeout(() => {
+  fistTimeoutId = setTimeout(() => {
     fistIndicator.classList.remove('active');
+    fistTimeoutId = null;
   }, 800);
 };
 
@@ -148,6 +166,17 @@ const showFistHome = () => {
  * Cleanup gesture indicators
  */
 const destroyGestureIndicator = () => {
+  // Clear any pending timeouts
+  if (swipeTimeoutId !== null) {
+    clearTimeout(swipeTimeoutId);
+    swipeTimeoutId = null;
+  }
+  if (fistTimeoutId !== null) {
+    clearTimeout(fistTimeoutId);
+    fistTimeoutId = null;
+  }
+
+  // Remove DOM elements
   if (container && container.parentNode) {
     container.parentNode.removeChild(container);
   }

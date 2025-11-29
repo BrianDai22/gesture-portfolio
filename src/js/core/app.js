@@ -11,7 +11,7 @@ import { initGestureRecognizer, processFrame, onGesture, onCooldown } from '../g
 import { initSwipeCooldown, startCooldown, destroySwipeCooldown } from '../ui/swipeCooldown.js';
 import { getCurrentSection, navigateNext, navigatePrev, navigateHome, onSectionChange } from '../state/navigationState.js';
 import { initGestureIndicator, showGestureIndicator, hidePointIndicator, destroyGestureIndicator } from '../ui/gestureIndicator.js';
-import { initScene, getScene, getCamera, startRenderLoop, stopRenderLoop, onUpdate } from '../scene/sceneManager.js';
+import { initScene, getScene, getCamera, startRenderLoop, stopRenderLoop, onUpdate, destroyScene } from '../scene/sceneManager.js';
 import { createSectionPanels, HOME_SECTION_INDEX } from '../scene/sectionPanels.js';
 import { initNavigation, updateCameraAnimation, updatePointer } from './navigation.js';
 import { initNavigationIndicator, updateNavigationIndicator, destroyNavigationIndicator } from '../ui/navigationIndicator.js';
@@ -116,6 +116,12 @@ const createApp = () => {
             }
 
             lastGestureType = gesture ? gesture.type : null;
+          } else {
+            // No landmarks detected—clear any lingering point indicator
+            if (lastGestureType === 'point') {
+              hidePointIndicator();
+            }
+            lastGestureType = null;
           }
         });
 
@@ -246,7 +252,7 @@ const createApp = () => {
    */
   const destroy = () => {
     console.log('Gesture Portfolio: Cleaning up...');
-    stopRenderLoop();
+    destroyScene();
     stopHandTracking();
     destroyHandOverlay();
     destroyGestureIndicator();
