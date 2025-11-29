@@ -3,9 +3,14 @@
  * Handles camera animation and navigation between section panels
  */
 
-import * as THREE from 'three';
-import { onSectionChange } from '../state/navigationState.js';
-import { getPanelPosition, highlightPanel, getPanelMeshes, HOME_SECTION_INDEX } from '../scene/sectionPanels.js';
+import * as THREE from "three";
+import { onSectionChange } from "../state/navigationState.js";
+import {
+  getPanelPosition,
+  highlightPanel,
+  getPanelMeshes,
+  HOME_SECTION_INDEX,
+} from "../scene/sectionPanels.js";
 
 // Camera animation state
 let camera = null;
@@ -15,6 +20,11 @@ let startPosition = new THREE.Vector3();
 let targetPosition = new THREE.Vector3();
 let startLookAt = new THREE.Vector3();
 let targetLookAt = new THREE.Vector3();
+const reusableLookAt = new THREE.Vector3();
+const fingerScreenPos = new THREE.Vector2();
+const panelScreenPos = new THREE.Vector2();
+const panelCenter = new THREE.Vector3();
+const projectedPosition = new THREE.Vector3();
 
 // Animation configuration
 const ANIMATION_DURATION = 500; // ms
@@ -38,7 +48,7 @@ const lerp = (start, end, t) => {
  */
 const initNavigation = (cam, panels) => {
   if (!cam) {
-    console.error('Navigation: Camera is required');
+    console.error("Navigation: Camera is required");
     return;
   }
 
@@ -53,7 +63,7 @@ const initNavigation = (cam, panels) => {
   // Initialize camera at home section (About)
   navigateToSection(HOME_SECTION_INDEX, true); // Immediate, no animation
 
-  console.log('Navigation: Initialized');
+  console.log("Navigation: Initialized");
 };
 
 /**
@@ -93,7 +103,7 @@ const navigateToSection = (sectionIndex, immediate = false) => {
     targetLookAt.copy(panelPosition);
 
     isAnimating = true;
-    animationStartTime = Date.now();
+    animationStartTime = performance.now();
 
     console.log(`Navigation: Animating to section ${sectionIndex}`);
   }
@@ -105,7 +115,7 @@ const navigateToSection = (sectionIndex, immediate = false) => {
 const updateCameraAnimation = () => {
   if (!isAnimating || !camera) return;
 
-  const elapsed = Date.now() - animationStartTime;
+  const elapsed = performance.now() - animationStartTime;
   const t = Math.min(elapsed / ANIMATION_DURATION, 1.0);
 
   // Lerp camera position
@@ -114,18 +124,18 @@ const updateCameraAnimation = () => {
   camera.position.z = lerp(startPosition.z, targetPosition.z, t);
 
   // Lerp look-at target
-  const currentLookAt = new THREE.Vector3(
+  reusableLookAt.set(
     lerp(startLookAt.x, targetLookAt.x, t),
     lerp(startLookAt.y, targetLookAt.y, t),
-    lerp(startLookAt.z, targetLookAt.z, t)
+    lerp(startLookAt.z, targetLookAt.z, t),
   );
-  camera.lookAt(currentLookAt);
+  camera.lookAt(reusableLookAt);
 
   // Check if animation is complete
   if (t >= 1.0) {
     isAnimating = false;
     camera.lookAt(targetLookAt); // Ensure exact final orientation
-    console.log('Navigation: Animation complete');
+    console.log("Navigation: Animation complete");
   }
 };
 
@@ -140,6 +150,8 @@ const updatePointer = (screenPosition) => {
   // Invert x-coordinate to account for CSS scaleX(-1) flip on video
   const adjustedX = 1 - screenPosition.x;
 
+  fingerScreenPos.set(adjustedX, screenPosition.y);
+
   // Get panel meshes
   const panels = getPanelMeshes();
   if (!panels || panels.length === 0) return;
@@ -147,24 +159,22 @@ const updatePointer = (screenPosition) => {
   // Project all panel positions to screen space and find closest to finger
   let closestPanel = null;
   let closestDistance = Infinity;
-  const fingerScreenPos = new THREE.Vector2(adjustedX, screenPosition.y);
-
-  panels.forEach(panel => {
+  panels.forEach((panel) => {
     // Get panel center in world space
-    const panelCenter = panel.position.clone();
+    panelCenter.copy(panel.position);
 
     // Project to screen space (normalized 0-1)
-    const projected = panelCenter.clone().project(camera);
-    const panelScreenPos = new THREE.Vector2(
-      (projected.x + 1) / 2,
-      (-projected.y + 1) / 2
+    projectedPosition.copy(panelCenter).project(camera);
+    panelScreenPos.set(
+      (projectedPosition.x + 1) / 2,
+      (-projectedPosition.y + 1) / 2,
     );
 
     // Calculate distance to finger
     const distance = fingerScreenPos.distanceTo(panelScreenPos);
 
     // Only consider panels in front of camera (z < 1 after projection)
-    if (projected.z < 1 && distance < closestDistance) {
+    if (projectedPosition.z < 1 && distance < closestDistance) {
       closestDistance = distance;
       closestPanel = panel;
     }
@@ -175,7 +185,9 @@ const updatePointer = (screenPosition) => {
 
   if (closestPanel && closestDistance < DETECTION_THRESHOLD) {
     const sectionTitle = closestPanel.userData.sectionTitle;
-    console.log(`Navigation: Pointing at "${sectionTitle}" panel (distance: ${closestDistance.toFixed(3)})`);
+    console.log(
+      `Navigation: Pointing at "${sectionTitle}" panel (distance: ${closestDistance.toFixed(3)})`,
+    );
     // Full selection behavior will be added in Phase 3
   }
 };
@@ -184,5 +196,5 @@ export {
   initNavigation,
   navigateToSection,
   updateCameraAnimation,
-  updatePointer
+  updatePointer,
 };

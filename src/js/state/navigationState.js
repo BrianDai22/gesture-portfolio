@@ -3,13 +3,13 @@
  * Manages current section index and navigation events
  */
 
-// Configuration
-const TOTAL_SECTIONS = 8; // 0-7: Help, Download, Contact, About, Experience, Projects, Skills, Education
-let homeSectionIndex = 3; // About is home (index 3)
+import { TOTAL_SECTIONS, HOME_SECTION_INDEX } from "./sectionsConfig.js";
+
+let homeSectionIndex = HOME_SECTION_INDEX;
 
 // State
-let currentSectionIndex = 3; // Start at home (About)
-const sectionChangeCallbacks = [];
+let currentSectionIndex = HOME_SECTION_INDEX; // Start at home (About)
+let sectionChangeCallbacks = [];
 
 /**
  * Get current section index
@@ -67,10 +67,12 @@ const goTo = (index) => {
   const previousIndex = currentSectionIndex;
   currentSectionIndex = index;
 
-  console.log(`NavigationState: Navigating from section ${previousIndex} to section ${currentSectionIndex}`);
+  console.log(
+    `NavigationState: Navigating from section ${previousIndex} to section ${currentSectionIndex}`,
+  );
 
   // Emit change event to all listeners
-  sectionChangeCallbacks.forEach(callback => {
+  sectionChangeCallbacks.forEach((callback) => {
     callback(currentSectionIndex, previousIndex);
   });
 };
@@ -80,9 +82,19 @@ const goTo = (index) => {
  * @param {Function} callback - Function called with (newIndex, oldIndex)
  */
 const onSectionChange = (callback) => {
-  if (typeof callback === 'function') {
+  if (typeof callback === "function") {
     sectionChangeCallbacks.push(callback);
   }
+};
+
+const offSectionChange = (callback) => {
+  sectionChangeCallbacks = sectionChangeCallbacks.filter(
+    (cb) => cb !== callback,
+  );
+};
+
+const clearSectionChangeCallbacks = () => {
+  sectionChangeCallbacks = [];
 };
 
 export {
@@ -92,5 +104,7 @@ export {
   navigateHome,
   goTo,
   onSectionChange,
-  setHomeSectionIndex
+  offSectionChange,
+  clearSectionChangeCallbacks,
+  setHomeSectionIndex,
 };

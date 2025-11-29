@@ -3,13 +3,14 @@
  * Manages Three.js scene, renderer, camera, lighting, and render loop
  */
 
-import * as THREE from 'three';
+import * as THREE from "three";
 
 // Scene components
 let scene = null;
 let camera = null;
 let renderer = null;
 let animationFrameId = null;
+let resizeFrameId = null;
 
 // Update callbacks
 const updateCallbacks = [];
@@ -20,9 +21,9 @@ const updateCallbacks = [];
  */
 const initScene = () => {
   // Get canvas element
-  const canvas = document.getElementById('three-canvas');
+  const canvas = document.getElementById("three-canvas");
   if (!canvas) {
-    console.error('SceneManager: #three-canvas element not found');
+    console.error("SceneManager: #three-canvas element not found");
     return null;
   }
 
@@ -39,7 +40,7 @@ const initScene = () => {
   renderer = new THREE.WebGLRenderer({
     canvas: canvas,
     alpha: true,
-    antialias: true
+    antialias: true,
   });
   // Ensure the renderer stays transparent so the camera feed remains visible
   renderer.setClearColor(0x000000, 0);
@@ -50,9 +51,9 @@ const initScene = () => {
   setupLighting();
 
   // Handle window resize
-  window.addEventListener('resize', handleResize);
+  window.addEventListener("resize", handleResize);
 
-  console.log('SceneManager: Scene initialized');
+  console.log("SceneManager: Scene initialized");
 
   return { scene, camera, renderer };
 };
@@ -72,7 +73,7 @@ const setupLighting = () => {
   directionalLight.position.set(5, 5, 3);
   scene.add(directionalLight);
 
-  console.log('SceneManager: Lighting configured');
+  console.log("SceneManager: Lighting configured");
 };
 
 /**
@@ -81,12 +82,16 @@ const setupLighting = () => {
 const handleResize = () => {
   if (!camera || !renderer) return;
 
-  // Update camera aspect ratio
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
+  if (resizeFrameId !== null) return;
 
-  // Update renderer size
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  resizeFrameId = requestAnimationFrame(() => {
+    resizeFrameId = null;
+    if (!camera || !renderer) return;
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
 };
 
 /**
@@ -94,13 +99,15 @@ const handleResize = () => {
  */
 const startRenderLoop = () => {
   if (!scene || !camera || !renderer) {
-    console.error('SceneManager: Cannot start render loop - scene not initialized');
+    console.error(
+      "SceneManager: Cannot start render loop - scene not initialized",
+    );
     return;
   }
 
   const render = () => {
     // Call all update callbacks
-    updateCallbacks.forEach(callback => callback());
+    updateCallbacks.forEach((callback) => callback());
 
     // Render scene
     renderer.render(scene, camera);
@@ -110,7 +117,7 @@ const startRenderLoop = () => {
   };
 
   render();
-  console.log('SceneManager: Render loop started');
+  console.log("SceneManager: Render loop started");
 };
 
 /**
@@ -120,7 +127,7 @@ const stopRenderLoop = () => {
   if (animationFrameId !== null) {
     cancelAnimationFrame(animationFrameId);
     animationFrameId = null;
-    console.log('SceneManager: Render loop stopped');
+    console.log("SceneManager: Render loop stopped");
   }
 };
 
@@ -139,7 +146,7 @@ const disposeObject = (object) => {
   // Dispose material(s)
   if (object.material) {
     if (Array.isArray(object.material)) {
-      object.material.forEach(material => disposeMaterial(material));
+      object.material.forEach((material) => disposeMaterial(material));
     } else {
       disposeMaterial(object.material);
     }
@@ -147,7 +154,7 @@ const disposeObject = (object) => {
 
   // Recursively dispose children
   if (object.children) {
-    object.children.forEach(child => disposeObject(child));
+    object.children.forEach((child) => disposeObject(child));
   }
 };
 
@@ -159,11 +166,23 @@ const disposeMaterial = (material) => {
   if (!material) return;
 
   // Dispose all textures
-  const textureProperties = ['map', 'lightMap', 'bumpMap', 'normalMap', 'specularMap',
-                             'envMap', 'alphaMap', 'aoMap', 'displacementMap',
-                             'emissiveMap', 'gradientMap', 'metalnessMap', 'roughnessMap'];
+  const textureProperties = [
+    "map",
+    "lightMap",
+    "bumpMap",
+    "normalMap",
+    "specularMap",
+    "envMap",
+    "alphaMap",
+    "aoMap",
+    "displacementMap",
+    "emissiveMap",
+    "gradientMap",
+    "metalnessMap",
+    "roughnessMap",
+  ];
 
-  textureProperties.forEach(prop => {
+  textureProperties.forEach((prop) => {
     if (material[prop]) {
       material[prop].dispose();
     }
@@ -176,7 +195,7 @@ const disposeMaterial = (material) => {
  * Cleanup and destroy scene resources
  */
 const destroyScene = () => {
-  console.log('SceneManager: Destroying scene...');
+  console.log("SceneManager: Destroying scene...");
 
   // Stop render loop first
   stopRenderLoop();
@@ -185,7 +204,11 @@ const destroyScene = () => {
   updateCallbacks.length = 0;
 
   // Remove resize event listener
-  window.removeEventListener('resize', handleResize);
+  window.removeEventListener("resize", handleResize);
+  if (resizeFrameId !== null) {
+    cancelAnimationFrame(resizeFrameId);
+    resizeFrameId = null;
+  }
 
   // Dispose scene objects
   if (scene) {
@@ -204,7 +227,7 @@ const destroyScene = () => {
   // Clear camera reference
   camera = null;
 
-  console.log('SceneManager: Scene destroyed');
+  console.log("SceneManager: Scene destroyed");
 };
 
 /**
@@ -212,7 +235,7 @@ const destroyScene = () => {
  * @param {Function} callback - Function to call each frame
  */
 const onUpdate = (callback) => {
-  if (typeof callback === 'function') {
+  if (typeof callback === "function") {
     updateCallbacks.push(callback);
   }
 };
@@ -243,5 +266,5 @@ export {
   onUpdate,
   startRenderLoop,
   stopRenderLoop,
-  destroyScene
+  destroyScene,
 };

@@ -3,23 +3,25 @@
  * Stores current hand landmarks and dominant hand preference
  */
 
-const STORAGE_KEY = 'gesturePortfolio_dominantHand';
-const DEFAULT_HAND = 'Right';
+import { getItem, setItem } from "./safeStorage.js";
+
+const STORAGE_KEY = "gesturePortfolio_dominantHand";
+const DEFAULT_HAND = "Right";
 
 let currentLandmarks = null;
-let dominantHand = localStorage.getItem(STORAGE_KEY) || DEFAULT_HAND;
+let dominantHand = getItem(STORAGE_KEY) || DEFAULT_HAND;
 
 /**
  * Set dominant hand preference (Left or Right)
  * @param {string} hand - 'Left' or 'Right'
  */
 const setDominantHand = (hand) => {
-  if (hand !== 'Left' && hand !== 'Right') {
-    console.warn('HandState: Invalid hand preference, expected Left or Right');
+  if (hand !== "Left" && hand !== "Right") {
+    console.warn("HandState: Invalid hand preference, expected Left or Right");
     return;
   }
   dominantHand = hand;
-  localStorage.setItem(STORAGE_KEY, hand);
+  setItem(STORAGE_KEY, hand);
   console.log(`HandState: Dominant hand set to ${hand}`);
 };
 
@@ -59,5 +61,5 @@ export {
   getDominantHand,
   updateLandmarks,
   getLandmarks,
-  clearLandmarks
+  clearLandmarks,
 };

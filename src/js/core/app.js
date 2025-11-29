@@ -3,25 +3,77 @@
  * Manages lifecycle and coordinates all modules
  */
 
-import { initCamera, getCameraStream, stopCamera } from './camera.js';
-import { initHandTracking, setOnResultsCallback, stopHandTracking } from './handTracking.js';
-import { initHandOverlay, renderLandmarks, destroyHandOverlay } from '../ui/handOverlay.js';
-import { getDominantHand, setDominantHand, getLandmarks } from '../state/handState.js';
-import { initGestureRecognizer, processFrame, onGesture, onCooldown } from '../gestures/gestureRecognizer.js';
-import { initSwipeCooldown, startCooldown, destroySwipeCooldown } from '../ui/swipeCooldown.js';
-import { getCurrentSection, navigateNext, navigatePrev, navigateHome, onSectionChange } from '../state/navigationState.js';
-import { initGestureIndicator, showGestureIndicator, hidePointIndicator, destroyGestureIndicator } from '../ui/gestureIndicator.js';
-import { initScene, getScene, getCamera, startRenderLoop, stopRenderLoop, onUpdate, destroyScene } from '../scene/sceneManager.js';
-import { createSectionPanels, HOME_SECTION_INDEX } from '../scene/sectionPanels.js';
-import { initNavigation, updateCameraAnimation, updatePointer } from './navigation.js';
-import { initNavigationIndicator, updateNavigationIndicator, destroyNavigationIndicator } from '../ui/navigationIndicator.js';
+import { initCamera, getCameraStream, stopCamera } from "./camera.js";
+import {
+  initHandTracking,
+  setOnResultsCallback,
+  stopHandTracking,
+} from "./handTracking.js";
+import {
+  initHandOverlay,
+  renderLandmarks,
+  destroyHandOverlay,
+} from "../ui/handOverlay.js";
+import {
+  getDominantHand,
+  setDominantHand,
+  getLandmarks,
+} from "../state/handState.js";
+import {
+  initGestureRecognizer,
+  processFrame,
+  onGesture,
+  onCooldown,
+} from "../gestures/gestureRecognizer.js";
+import {
+  initSwipeCooldown,
+  startCooldown,
+  destroySwipeCooldown,
+} from "../ui/swipeCooldown.js";
+import {
+  getCurrentSection,
+  navigateNext,
+  navigatePrev,
+  navigateHome,
+  onSectionChange,
+  clearSectionChangeCallbacks,
+} from "../state/navigationState.js";
+import {
+  initGestureIndicator,
+  showGestureIndicator,
+  hidePointIndicator,
+  destroyGestureIndicator,
+} from "../ui/gestureIndicator.js";
+import {
+  initScene,
+  getScene,
+  getCamera,
+  startRenderLoop,
+  stopRenderLoop,
+  onUpdate,
+  destroyScene,
+} from "../scene/sceneManager.js";
+import {
+  createSectionPanels,
+  HOME_SECTION_INDEX,
+} from "../scene/sectionPanels.js";
+import {
+  initNavigation,
+  updateCameraAnimation,
+  updatePointer,
+} from "./navigation.js";
+import {
+  initNavigationIndicator,
+  updateNavigationIndicator,
+  destroyNavigationIndicator,
+} from "../ui/navigationIndicator.js";
 
 // Get DOM references
 const getDomRefs = () => {
-  const threeCanvas = document.getElementById('three-canvas');
-  const videoElement = document.getElementById('camera-feed');
-  const handCanvas = document.getElementById('hand-overlay');
-  const overlay = document.getElementById('ui-overlay');
+  const threeCanvas = document.getElementById("three-canvas");
+  const videoElement = document.getElementById("camera-feed");
+  const handCanvas = document.getElementById("hand-overlay");
+  const overlay = document.getElementById("ui-overlay");
   return { threeCanvas, videoElement, handCanvas, overlay };
 };
 
@@ -29,20 +81,29 @@ const createApp = () => {
   const dom = getDomRefs();
   let initialized = false;
   let lastGestureType = null;
+  const handButtonClickHandlers = new Map();
 
   const init = async () => {
-    if (!dom.threeCanvas || !dom.videoElement || !dom.handCanvas || !dom.overlay) {
-      console.error('Gesture Portfolio: Required DOM elements missing');
-      updateStatus('Error: Missing required elements', 'Please refresh the page');
+    if (
+      !dom.threeCanvas ||
+      !dom.videoElement ||
+      !dom.handCanvas ||
+      !dom.overlay
+    ) {
+      console.error("Gesture Portfolio: Required DOM elements missing");
+      updateStatus(
+        "Error: Missing required elements",
+        "Please refresh the page",
+      );
       return;
     }
 
     if (initialized) {
-      console.warn('Gesture Portfolio: Already initialized');
+      console.warn("Gesture Portfolio: Already initialized");
       return;
     }
 
-    console.log('Gesture Portfolio: Initializing...');
+    console.log("Gesture Portfolio: Initializing...");
 
     try {
       // Step 1: Initialize Three.js scene
@@ -66,7 +127,7 @@ const createApp = () => {
         // Start render loop
         startRenderLoop();
 
-        console.log('Gesture Portfolio: Three.js scene initialized');
+        console.log("Gesture Portfolio: Three.js scene initialized");
       }
 
       // Step 2: Initialize camera
@@ -74,14 +135,18 @@ const createApp = () => {
 
       if (cameraStream) {
         // Camera granted - initialize hand tracking
-        console.log('Gesture Portfolio: Camera access granted, initializing hand tracking...');
+        console.log(
+          "Gesture Portfolio: Camera access granted, initializing hand tracking...",
+        );
 
         // Wait for video to be ready
         await new Promise((resolve) => {
           if (dom.videoElement.readyState >= 2) {
             resolve();
           } else {
-            dom.videoElement.addEventListener('loadeddata', resolve, { once: true });
+            dom.videoElement.addEventListener("loadeddata", resolve, {
+              once: true,
+            });
           }
         });
 
@@ -111,14 +176,17 @@ const createApp = () => {
             const gesture = processFrame(landmarks);
 
             // Hide point indicator if we're not pointing anymore
-            if (lastGestureType === 'point' && (!gesture || gesture.type !== 'point')) {
+            if (
+              lastGestureType === "point" &&
+              (!gesture || gesture.type !== "point")
+            ) {
               hidePointIndicator();
             }
 
             lastGestureType = gesture ? gesture.type : null;
           } else {
             // No landmarks detected—clear any lingering point indicator
-            if (lastGestureType === 'point') {
+            if (lastGestureType === "point") {
               hidePointIndicator();
             }
             lastGestureType = null;
@@ -132,26 +200,29 @@ const createApp = () => {
 
         // Set up navigation change handler
         onSectionChange((newIndex, oldIndex) => {
-          console.log(`Navigation: Section changed from ${oldIndex} to ${newIndex}`);
+          console.log(
+            `Navigation: Section changed from ${oldIndex} to ${newIndex}`,
+          );
           updateNavigationIndicator(newIndex);
         });
 
         // Show hand selector and initialize it
         initHandSelector();
 
-        console.log('Gesture Portfolio: Hand tracking active');
-        console.log('Gesture Portfolio: Gesture recognition active');
-
+        console.log("Gesture Portfolio: Hand tracking active");
+        console.log("Gesture Portfolio: Gesture recognition active");
       } else {
         // Camera denied - fallback mode already handled by camera module
-        console.log('Gesture Portfolio: Running in fallback mode (no camera)');
+        console.log("Gesture Portfolio: Running in fallback mode (no camera)");
       }
 
       initialized = true;
-
     } catch (error) {
-      console.error('Gesture Portfolio: Initialization error', error);
-      updateStatus('Initialization Error', 'Please refresh the page and try again');
+      console.error("Gesture Portfolio: Initialization error", error);
+      updateStatus(
+        "Initialization Error",
+        "Please refresh the page and try again",
+      );
     }
   };
 
@@ -160,29 +231,29 @@ const createApp = () => {
    * @param {Object} gesture - Gesture object from recognizer
    */
   const handleGesture = (gesture) => {
-    console.log('Gesture detected:', gesture);
+    console.log("Gesture detected:", gesture);
 
     // Show visual indicator
     showGestureIndicator(gesture.type, gesture.data);
 
     // Map gestures to navigation actions
     switch (gesture.type) {
-      case 'swipe-left':
-        console.log('Action: Navigate to previous section');
+      case "swipe-left":
+        console.log("Action: Navigate to previous section");
         navigatePrev();
         break;
 
-      case 'swipe-right':
-        console.log('Action: Navigate to next section');
+      case "swipe-right":
+        console.log("Action: Navigate to next section");
         navigateNext();
         break;
 
-      case 'fist-home':
-        console.log('Action: Navigate to home (fist gesture)');
+      case "fist-home":
+        console.log("Action: Navigate to home (fist gesture)");
         navigateHome();
         break;
 
-      case 'point':
+      case "point":
         // Point gesture is continuous - track position and check for panel hover
         if (gesture.data) {
           // Update pointer for raycasting against panels
@@ -201,10 +272,10 @@ const createApp = () => {
    * @param {string} hint - Hint text
    */
   const updateStatus = (status, hint) => {
-    const statusElement = document.getElementById('overlay-status');
+    const statusElement = document.getElementById("overlay-status");
     if (statusElement) {
-      const statusText = statusElement.querySelector('.status-text');
-      const hintText = statusElement.querySelector('.hint');
+      const statusText = statusElement.querySelector(".status-text");
+      const hintText = statusElement.querySelector(".hint");
       if (statusText) statusText.textContent = status;
       if (hintText) hintText.textContent = hint;
     }
@@ -214,24 +285,33 @@ const createApp = () => {
    * Initialize hand selector UI
    */
   const initHandSelector = () => {
-    const selector = document.getElementById('hand-selector');
+    const selector = document.getElementById("hand-selector");
     if (!selector) return;
 
     // Show the selector
-    selector.classList.remove('hidden');
+    selector.classList.remove("hidden");
 
     // Get current preference and update button states
     const currentHand = getDominantHand();
     updateHandButtons(currentHand);
 
     // Add click handlers to buttons
-    const buttons = selector.querySelectorAll('.hand-btn');
-    buttons.forEach(btn => {
-      btn.addEventListener('click', () => {
+    const buttons = selector.querySelectorAll(".hand-btn");
+    buttons.forEach((btn) => {
+      // Remove any existing handler to avoid stacking on re-init
+      const existingHandler = handButtonClickHandlers.get(btn);
+      if (existingHandler) {
+        btn.removeEventListener("click", existingHandler);
+      }
+
+      const handler = () => {
         const hand = btn.dataset.hand;
         setDominantHand(hand);
         updateHandButtons(hand);
-      });
+      };
+
+      btn.addEventListener("click", handler);
+      handButtonClickHandlers.set(btn, handler);
     });
   };
 
@@ -240,24 +320,40 @@ const createApp = () => {
    * @param {string} activeHand - 'Left' or 'Right'
    */
   const updateHandButtons = (activeHand) => {
-    const buttons = document.querySelectorAll('.hand-btn');
-    buttons.forEach(btn => {
+    const buttons = document.querySelectorAll(".hand-btn");
+    buttons.forEach((btn) => {
       const isActive = btn.dataset.hand === activeHand;
-      btn.setAttribute('aria-pressed', isActive.toString());
+      btn.setAttribute("aria-pressed", isActive.toString());
     });
+  };
+
+  const destroyHandSelector = () => {
+    const selector = document.getElementById("hand-selector");
+    if (selector) {
+      const buttons = selector.querySelectorAll(".hand-btn");
+      buttons.forEach((btn) => {
+        const handler = handButtonClickHandlers.get(btn);
+        if (handler) {
+          btn.removeEventListener("click", handler);
+          handButtonClickHandlers.delete(btn);
+        }
+      });
+    }
   };
 
   /**
    * Cleanup and destroy app
    */
   const destroy = () => {
-    console.log('Gesture Portfolio: Cleaning up...');
+    console.log("Gesture Portfolio: Cleaning up...");
     destroyScene();
     stopHandTracking();
     destroyHandOverlay();
     destroyGestureIndicator();
     destroySwipeCooldown();
     destroyNavigationIndicator();
+    destroyHandSelector();
+    clearSectionChangeCallbacks();
     stopCamera();
     initialized = false;
   };
